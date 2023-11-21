@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "tb_customers")
-@Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -43,6 +43,9 @@ public class Customer {
     @NotEmpty
     private List<Local> localList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
+
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false)
@@ -56,5 +59,9 @@ public class Customer {
     public void setLocalList(List<Local> localList) {
         this.localList = localList;
         for(Local local:localList) local.getCustomerList().add(this);
+    }
+    public  void  setOrders(List<Order> orders){
+        this.orders = orders;
+        for(Order order:orders) order.setCustomer(this);
     }
 }

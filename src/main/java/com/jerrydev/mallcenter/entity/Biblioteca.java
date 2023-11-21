@@ -7,13 +7,13 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "tb_bibliotecas")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@ToString
+        @Entity
+        @Table(name = "tb_bibliotecas")
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @Builder
+        @ToString
 public class Biblioteca {
 
     @Id
