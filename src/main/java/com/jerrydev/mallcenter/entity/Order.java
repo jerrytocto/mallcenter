@@ -28,7 +28,7 @@ public class Order {
     private StatusOrder status;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JoinColumn(name = "customer_id", referencedColumnName = "id", nullable = false)
     private Customer customer;
 
     @Temporal(TemporalType.TIMESTAMP)

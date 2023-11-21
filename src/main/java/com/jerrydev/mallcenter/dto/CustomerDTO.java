@@ -39,4 +39,6 @@ public class CustomerDTO {
 
     private List<LocalDTO> localDTOS = new ArrayList<>();
 
+    private List<OrderDTO> orders = new ArrayList<>();
+
 }
