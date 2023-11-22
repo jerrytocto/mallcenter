@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = "localList")
 public class Customer {
 
     @Id
@@ -34,13 +33,12 @@ public class Customer {
     @Column(nullable = false)
     private boolean enable;
 
-    @ManyToMany( fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "customer_local",
             joinColumns = @JoinColumn(name = "customer_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "local_id", referencedColumnName = "id")
     )
-    @NotEmpty
     private List<Local> localList = new ArrayList<>();
 
     @OneToMany(mappedBy = "customer",cascade = CascadeType.ALL, fetch = FetchType.LAZY)

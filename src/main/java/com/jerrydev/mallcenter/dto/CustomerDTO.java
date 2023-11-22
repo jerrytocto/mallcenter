@@ -37,7 +37,7 @@ public class CustomerDTO {
     @NotNull
     private boolean enable;
 
-    private List<LocalDTO> localDTOS = new ArrayList<>();
+    private List<LocalDTO> locals = new ArrayList<>();
 
     private List<OrderDTO> orders = new ArrayList<>();
 

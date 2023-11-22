@@ -11,7 +11,7 @@ public interface CustomerService {
 
     CustomerDTO findById(int id);
 
-    CustomerDTO create(CustomerDTO customerDTO);
+    CustomerDTO create(CustomerDTO customerDTO, int idLocal);
 
     CustomerDTO update(CustomerDTO customerDTO, int id);
 

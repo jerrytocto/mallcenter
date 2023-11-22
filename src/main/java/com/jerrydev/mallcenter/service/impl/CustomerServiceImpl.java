@@ -3,18 +3,21 @@ package com.jerrydev.mallcenter.service.impl;
 import com.jerrydev.mallcenter.dto.CustomerDTO;
 import com.jerrydev.mallcenter.dto.OrderDTO;
 import com.jerrydev.mallcenter.entity.Customer;
+import com.jerrydev.mallcenter.entity.Local;
 import com.jerrydev.mallcenter.entity.Order;
 import com.jerrydev.mallcenter.exception.DatabaseOperationException;
 import com.jerrydev.mallcenter.exception.ResourceNotFoundException;
 import com.jerrydev.mallcenter.maper.CustomerMapper;
 import com.jerrydev.mallcenter.maper.OrderMapper;
 import com.jerrydev.mallcenter.repository.CustomerRepository;
+import com.jerrydev.mallcenter.repository.LocalRepository;
 import com.jerrydev.mallcenter.repository.OrderRepository;
 import com.jerrydev.mallcenter.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,15 +26,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerRepository customerRepository;
-
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
     private CustomerMapper customerMapper;
-
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private LocalRepository localRepository;
 
 
     @Override
@@ -51,9 +53,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerDTO create(CustomerDTO customerDTO) {
+    public CustomerDTO create(CustomerDTO customerDTO, int idLocal) {
+
+        Local local = localRepository.findById(idLocal)
+                .orElseThrow(()->new ResourceNotFoundException("Local","id",idLocal));
+
         Customer customer = customerMapper.fromCustomerDTO(customerDTO);
-        return customerMapper.fromCustomer(customerRepository.save(customer));
+
+        customer.setLocalList(List.of(local));
+
+        customerRepository.save(customer);
+        localRepository.save(local);
+        return customerMapper.fromCustomer(customer);
     }
 
     @Override
@@ -61,6 +72,7 @@ public class CustomerServiceImpl implements CustomerService {
         try{
             Customer customer = customerRepository.findById(id)
                     .orElseThrow(()->new ResourceNotFoundException("Customer","id",id));
+
             customer.setFirstName(customerDTO.getFirstName());
             customer.setLastName(customerDTO.getLastName());
             customer.setEmail(customerDTO.getEmail());
@@ -88,7 +100,11 @@ public class CustomerServiceImpl implements CustomerService {
         try{
             Customer customer = customerRepository.findById(idCustomer)
                     .orElseThrow(()->new ResourceNotFoundException("Customer","id",idCustomer));
-            customer.setOrders(List.of(orderMapper.fromOrderDTO(orderDTO)));
+
+            Order order = orderMapper.fromOrderDTO(orderDTO);
+            order.setCustomer(customer);
+
+            orderRepository.save(order);
             customerRepository.save(customer);
         }catch (DatabaseOperationException ex) {
             throw new DatabaseOperationException("Insertar Orden", "Error al intentar insertar la orden", ex);
@@ -135,11 +151,11 @@ public class CustomerServiceImpl implements CustomerService {
         Order orderFound = orderRepository.findById(idOrder)
                 .orElseThrow(()->new ResourceNotFoundException("Order","id",idOrder));
 
-        if(orderFound.getCustomer().getId() == customerFound.getId()){
             orderFound.setTotal(orderDTO.getTotal());
             orderFound.setStatus(orderDTO.getStatus());
+            orderFound.setCustomer(customerFound);
+            orderFound.setUpdatedAt(new Date());
             return orderMapper.fromOrder(orderRepository.save(orderFound));
-        }
-        else throw new ResourceNotFoundException("Order y Customer no compatibles","id",idOrder);
+
     }
 }

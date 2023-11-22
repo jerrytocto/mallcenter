@@ -23,23 +23,27 @@ public class CustomerMapper {
 
     public Customer fromCustomerDTO(CustomerDTO customerDTO){
 
-        List<LocalDTO> localDTOS = customerDTO.getLocalDTOS() ;
-        List<Local> locals = new ArrayList<>();
-
-        List<OrderDTO> orderDTOS = customerDTO.getOrders() ;
-        List<Order> orders = new ArrayList<>();
-
-        for(LocalDTO localDTO: localDTOS) locals.add(localMapper.fromLocalDTO(localDTO));
-        for (OrderDTO orderDTO: orderDTOS) orders.add(orderMapper.fromOrderDTO(orderDTO));
-
         Customer customer = new Customer();
 
+        if(customerDTO.getLocals()!=null){
+            List<OrderDTO> orderDTOS = customerDTO.getOrders() ;
+            List<Order> orders = new ArrayList<>();
+
+            for (OrderDTO orderDTO: orderDTOS) orders.add(orderMapper.fromOrderDTO(orderDTO));
+
+            customer.setLastName(customerDTO.getLastName());
+            customer.setFirstName(customerDTO.getFirstName());
+            customer.setEmail(customerDTO.getEmail());
+            customer.setEnable(customer.isEnable());
+            customer.setOrders(orders);
+
+            return  customer ;
+
+        }
         customer.setLastName(customerDTO.getLastName());
         customer.setFirstName(customerDTO.getFirstName());
         customer.setEmail(customerDTO.getEmail());
         customer.setEnable(customer.isEnable());
-        customer.setLocalList(locals);
-        customer.setOrders(orders);
 
         return  customer ;
     }
@@ -47,7 +51,7 @@ public class CustomerMapper {
     public CustomerDTO fromCustomer(Customer customer){
 
         CustomerDTO customerDTO = new CustomerDTO();
-
+        customerDTO.setId(customer.getId());
         customerDTO.setLastName(customer.getLastName());
         customerDTO.setFirstName(customer.getFirstName());
         customerDTO.setEmail(customer.getEmail());
