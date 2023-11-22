@@ -7,7 +7,9 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_products")
@@ -38,6 +40,9 @@ public class Product {
     @NotNull
     private Local local ;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<ItemOrder> itemOrder = new ArrayList<>();
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
@@ -46,4 +51,11 @@ public class Product {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    public void setItemOrder(List<ItemOrder> itemOrder) {
+        this.itemOrder = itemOrder;
+        for(ItemOrder item : itemOrder){
+            item.setProduct(this);
+        }
+    }
 }

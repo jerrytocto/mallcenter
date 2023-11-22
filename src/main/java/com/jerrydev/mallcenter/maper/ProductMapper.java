@@ -9,6 +9,7 @@ public class ProductMapper {
 
     public Product fromProductDTO(ProductDTO productDTO){
         return Product.builder()
+                .id(productDTO.getId())
                 .name(productDTO.getName())
                 .description(productDTO.getDescription())
                 .price(productDTO.getPrice())

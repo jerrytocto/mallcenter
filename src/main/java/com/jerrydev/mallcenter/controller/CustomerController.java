@@ -225,7 +225,13 @@ public class CustomerController {
                     .message("Order Insertado Correctamente")
                     .build(),
                     HttpStatus.OK);
-        }catch (DatabaseOperationException ex){
+        }catch (ResourceNotFoundException ex){
+            return new ResponseEntity<>(ApiResponse.builder()
+                    .code(0)
+                    .object(ex.getMessage())
+                    .build(),
+                    HttpStatus.NOT_FOUND);
+        } catch (DatabaseOperationException ex){
             return new ResponseEntity<>(ApiResponse.builder()
                     .code(0)
                     .message(ex.getMessage())

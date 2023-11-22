@@ -2,9 +2,7 @@ package com.jerrydev.mallcenter.service.impl;
 
 import com.jerrydev.mallcenter.dto.CustomerDTO;
 import com.jerrydev.mallcenter.dto.OrderDTO;
-import com.jerrydev.mallcenter.entity.Customer;
-import com.jerrydev.mallcenter.entity.Local;
-import com.jerrydev.mallcenter.entity.Order;
+import com.jerrydev.mallcenter.entity.*;
 import com.jerrydev.mallcenter.exception.DatabaseOperationException;
 import com.jerrydev.mallcenter.exception.ResourceNotFoundException;
 import com.jerrydev.mallcenter.maper.CustomerMapper;
@@ -12,10 +10,14 @@ import com.jerrydev.mallcenter.maper.OrderMapper;
 import com.jerrydev.mallcenter.repository.CustomerRepository;
 import com.jerrydev.mallcenter.repository.LocalRepository;
 import com.jerrydev.mallcenter.repository.OrderRepository;
+import com.jerrydev.mallcenter.repository.ProductRepository;
 import com.jerrydev.mallcenter.service.CustomerService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +36,9 @@ public class CustomerServiceImpl implements CustomerService {
     private OrderMapper orderMapper;
     @Autowired
     private LocalRepository localRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
 
     @Override
@@ -95,20 +100,33 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
-    @Override
+    @Override @Transactional
     public void insertOrder(OrderDTO orderDTO, int idCustomer) {
-        try{
             Customer customer = customerRepository.findById(idCustomer)
-                    .orElseThrow(()->new ResourceNotFoundException("Customer","id",idCustomer));
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", idCustomer));
 
             Order order = orderMapper.fromOrderDTO(orderDTO);
-            order.setCustomer(customer);
+            customer.setOrders(new ArrayList<>(List.of(order)));
 
-            orderRepository.save(order);
+            BigDecimal totalAmount = BigDecimal.ZERO;
+
+            for (ItemOrder itemOrder : order.getItemOrder()) {
+                Product product = productRepository.findById(itemOrder.getProduct().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemOrder.getProduct().getId()));
+                itemOrder.setOrder(order);
+                itemOrder.setProduct(product);
+
+                // Reduce stock
+                if (product.getStock() >= itemOrder.getQuantity()){
+                    product.setStock(product.getStock() - itemOrder.getQuantity());
+                    productRepository.save(product);
+                    totalAmount = totalAmount.add(itemOrder.getPrice().multiply(BigDecimal.valueOf(itemOrder.getQuantity())));
+                }else {
+                    throw new DatabaseOperationException("Insertar Orden", "No hay stock suficiente para el producto " + product.getName(), null);
+                }
+            }
+            order.setTotal(totalAmount);
             customerRepository.save(customer);
-        }catch (DatabaseOperationException ex) {
-            throw new DatabaseOperationException("Insertar Orden", "Error al intentar insertar la orden", ex);
-        }
     }
 
     @Override
